@@ -1,9 +1,13 @@
-import { FC, useEffect, useState } from 'react';
+import { FC, useEffect, useMemo, useState } from 'react';
 import PCMPlayer from 'pcm-player';
-import { Form } from 'react-bootstrap';
+import { Button, Card, Form } from 'react-bootstrap';
+import Icon from '@reacticons/bootstrap-icons';
 
 const Player: FC = (_) => {
   const [player, setPlayer] = useState<PCMPlayer | undefined>();
+  const [volumeGauge, setVolumeGauge] = useState(1);
+  const [muted, setMuted] = useState(false);
+  const volume = useMemo(() => muted ? 0 : volumeGauge, [muted, volumeGauge]);
 
   useEffect(() => {
     if (!player) {
@@ -36,8 +40,6 @@ const Player: FC = (_) => {
         });
   }, [player]);
 
-  const [volume, setVolume] = useState(1);
-
   useEffect(() => {
     if (player) {
       player.volume(volume);
@@ -45,16 +47,23 @@ const Player: FC = (_) => {
   }, [player, volume]);
 
   return (
-      <>
+      <Card body>
+        <Button variant={muted ? 'outline-danger' : 'outline-dark'}
+                onClick={() => setMuted(!muted)}
+        >
+          <Icon name={muted ? 'volume-mute' : 'volume-up'}/>
+        </Button>
+
         <Form.Range min={0}
                     max={5}
                     step={0.01}
-                    value={volume}
+                    disabled={muted}
+                    value={volumeGauge}
                     onChange={({ target: { value } }) => {
-                      setVolume(parseFloat(value));
+                      setVolumeGauge(parseFloat(value));
                     }}
         />
-      </>
+      </Card>
   );
 };
 
