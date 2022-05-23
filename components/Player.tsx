@@ -1,9 +1,9 @@
 import { FC, useEffect, useMemo, useState } from 'react';
 import PCMPlayer from 'pcm-player';
-import { Button, Card, Form } from 'react-bootstrap';
+import { Button, Card, CardProps, Col, Container, Form, Row } from 'react-bootstrap';
 import Icon from '@reacticons/bootstrap-icons';
 
-const Player: FC = (_) => {
+const Player: FC<CardProps> = (props) => {
   const [player, setPlayer] = useState<PCMPlayer | undefined>();
   const [volumeGauge, setVolumeGauge] = useState(1);
   const [muted, setMuted] = useState(false);
@@ -47,22 +47,33 @@ const Player: FC = (_) => {
   }, [player, volume]);
 
   return (
-      <Card body>
-        <Button variant={muted ? 'outline-danger' : 'outline-dark'}
-                onClick={() => setMuted(!muted)}
-        >
-          <Icon name={muted ? 'volume-mute' : 'volume-up'}/>
-        </Button>
+      <Card body {...props}>
+        <Container>
+          <Row className="align-items-center">
+            <Col xs="auto">
+              <Button variant={muted ? 'outline-danger' : 'outline-dark'}
+                      onClick={() => setMuted(!muted)}
+              >
+                <Icon name={muted ? 'volume-mute' : 'volume-up'}/>
+              </Button>
+            </Col>
 
-        <Form.Range min={0}
-                    max={5}
-                    step={0.01}
-                    disabled={muted}
-                    value={volumeGauge}
-                    onChange={({ target: { value } }) => {
-                      setVolumeGauge(parseFloat(value));
-                    }}
-        />
+            <Col style={{
+              marginTop: 'auto',
+            }}
+            >
+              <Form.Range min={0}
+                          max={5}
+                          step={0.01}
+                          disabled={muted}
+                          value={volumeGauge}
+                          onChange={({ target: { value } }) => {
+                            setVolumeGauge(parseFloat(value));
+                          }}
+              />
+            </Col>
+          </Row>
+        </Container>
       </Card>
   );
 };

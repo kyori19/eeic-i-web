@@ -5,7 +5,12 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Home: NextPage = () => {
   return (
-      <Player/>
+      <Player style={{
+        width: '50%',
+        alignContent: 'center',
+        margin: '16px'
+      }}
+      />
   );
 };
 
