@@ -3,6 +3,7 @@ import { createServer } from 'http';
 import { parse } from 'url';
 import SocketHolder from './lib/SocketHolder.js';
 import { ParsedUrlQuery } from 'querystring';
+import * as Buffer from 'buffer';
 
 const dev = process.env.NODE_ENV !== 'production';
 const hostname = 'localhost';
@@ -25,7 +26,7 @@ const parseQuery = (data: Exclude<ParsedUrlQuery[string], undefined>): string =>
 app.prepare().then(() => {
   const socketHolder = new SocketHolder(port + 1);
 
-  createServer(async (req, res) => {
+  const server = createServer(async (req, res) => {
     try {
       // noinspection JSDeprecatedSymbols
       const parsedUrl = parse(req.url || '', true);
@@ -53,15 +54,18 @@ app.prepare().then(() => {
 
           res.statusCode = 200;
           const socket = socketHolder.speakers.get(id)!!;
-          socket.on('data', (data) => {
+          const pipeData = (data: Buffer) => {
             res.write(data);
-          });
-          socket.on('end', () => {
+          };
+          const disconnect = () => {
             res.end();
-          });
-          socket.on('error', () => {
-            res.end();
-          });
+            socket.removeListener('data', pipeData);
+            socket.removeListener('end', disconnect);
+            socket.removeListener('error', disconnect);
+          };
+          socket.on('data', pipeData);
+          socket.on('end', disconnect);
+          socket.on('error', disconnect);
           break;
         }
         default: {
@@ -74,7 +78,9 @@ app.prepare().then(() => {
       res.statusCode = 500;
       res.end('Internal Server Error');
     }
-  }).listen(port, () => {
+  });
+  server.maxConnections = 2000;
+  server.listen(port, () => {
     // noinspection HttpUrlsUsage
     console.log(`Ready on http://${hostname}:${port}`);
   });

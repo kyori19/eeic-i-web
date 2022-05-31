@@ -14,6 +14,7 @@ class SocketHolder {
         key = uuidV4();
       }
       this.speakers.set(key, socket);
+      socket.setMaxListeners(2000);
       socket.on('close', () => {
         this.speakers.delete(key);
       });
