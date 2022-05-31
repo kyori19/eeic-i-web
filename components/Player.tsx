@@ -1,7 +1,7 @@
 import { FC, useEffect, useMemo, useState } from 'react';
 import PCMPlayer from 'pcm-player';
-import { Button, Card, CardProps, Col, Container, Form, Row } from 'react-bootstrap';
-import Icon from '@reacticons/bootstrap-icons';
+import { Card, CardProps, Col, Container, Form, Row } from 'react-bootstrap';
+import IconButton from './IconButton';
 
 export type PlayerProps = CardProps & {
   id: string,
@@ -43,7 +43,10 @@ const Player: FC<PlayerProps> = ({ id, requestReset, ...props }) => {
 
           const reader = body.getReader();
 
-          const onData = ({ done, value }: ReadableStreamDefaultReadResult<Uint8Array>): undefined | Promise<undefined | ReadableStreamDefaultReadValueResult<Uint8Array> | ReadableStreamDefaultReadDoneResult> => {
+          const onData = ({
+                            done,
+                            value,
+                          }: ReadableStreamDefaultReadResult<Uint8Array>): undefined | Promise<undefined | ReadableStreamDefaultReadValueResult<Uint8Array> | ReadableStreamDefaultReadDoneResult> => {
             if (done || !value) {
               requestReset();
               return;
@@ -88,11 +91,10 @@ const Player: FC<PlayerProps> = ({ id, requestReset, ...props }) => {
           </Row>
           <Row className="align-items-center">
             <Col xs="auto">
-              <Button variant={muted ? 'outline-danger' : 'outline-dark'}
-                      onClick={() => setMuted(!muted)}
-              >
-                <Icon name={muted ? 'volume-mute' : 'volume-up'}/>
-              </Button>
+              <IconButton variant={muted ? 'outline-danger' : 'outline-dark'}
+                          onClick={() => setMuted(!muted)}
+                          name={muted ? 'volume-mute' : 'volume-up'}
+              />
             </Col>
 
             <Col style={{

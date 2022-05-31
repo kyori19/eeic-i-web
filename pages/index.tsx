@@ -2,10 +2,13 @@ import type { NextPage } from 'next';
 import { useCallback, useEffect, useState } from 'react';
 import Player from '../components/Player';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Card } from 'react-bootstrap';
+import { Card, Col, Container, Row } from 'react-bootstrap';
+import IconButton from '../components/IconButton';
+import SpeakerInstruction from '../components/SpeakerInstruction';
 
 const Home: NextPage = () => {
   const [speakers, setSpeakers] = useState<string[]>([]);
+  const [showInstruction, setShowInstruction] = useState(false);
 
   const fetchSpeakers = useCallback(() => {
     fetch('/speakers')
@@ -31,7 +34,35 @@ const Home: NextPage = () => {
                 margin: '16px',
               }}
         >
-          <Card.Title>Speakers List</Card.Title>
+          <Card.Title>
+            <Container>
+              <Row className="align-items-center">
+                <Col style={{
+                  flexGrow: 1,
+                }}
+                >
+                  Speakers List
+                </Col>
+                <Col style={{
+                  width: 'initial',
+                  flexGrow: 0,
+                }}
+                >
+                  <IconButton variant="outline-primary"
+                              name="question"
+                              onClick={() => {
+                                setShowInstruction((prev) => !prev);
+                              }}
+                  />
+                  <SpeakerInstruction show={showInstruction}
+                                      onHide={() => {
+                                        setShowInstruction(false);
+                                      }}
+                  />
+                </Col>
+              </Row>
+            </Container>
+          </Card.Title>
 
           {speakers.length > 0 ?
            speakers.map((id) => (
