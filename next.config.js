@@ -3,4 +3,5 @@ const nextConfig = {
   reactStrictMode: true,
 }
 
-module.exports = nextConfig
+// noinspection JSUnusedGlobalSymbols
+export default nextConfig;
