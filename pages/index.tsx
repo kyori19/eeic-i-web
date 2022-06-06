@@ -7,6 +7,15 @@ import IconButton from '../components/IconButton';
 import SpeakerInstruction from '../components/SpeakerInstruction';
 
 const Home: NextPage = () => {
+  const [audioCtx, setAudioCtx] = useState<AudioContext | undefined>(undefined);
+
+  useEffect(() => {
+    if (!audioCtx) {
+      setAudioCtx(new window.AudioContext());
+    }
+    // eslint-disable-next-line
+  }, []);
+
   const [speakers, setSpeakers] = useState<string[]>([]);
   const [showInstruction, setShowInstruction] = useState(false);
 
@@ -16,7 +25,7 @@ const Home: NextPage = () => {
         .then((text) => {
           setSpeakers(JSON.parse(text));
         });
-  }, [setSpeakers]);
+  }, []);
 
   useEffect(() => {
     fetchSpeakers();
@@ -64,7 +73,7 @@ const Home: NextPage = () => {
             </Container>
           </Card.Title>
 
-          {speakers.length > 0 ?
+          {audioCtx && speakers.length > 0 ?
            speakers.map((id) => (
                <Player key={id}
                        id={id}
@@ -73,13 +82,8 @@ const Home: NextPage = () => {
                          alignContent: 'center',
                          margin: '16px',
                        }}
-                       requestReset={() => {
-                         fetch('/speakers')
-                             .then((res) => res.text())
-                             .then((text) => {
-                               setSpeakers(JSON.parse(text));
-                             });
-                       }}
+                       requestReset={fetchSpeakers}
+                       audioCtx={audioCtx}
                />
            )) :
            (<span className="text-muted">No speakers available now!</span>)}
