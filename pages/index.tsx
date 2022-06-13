@@ -5,6 +5,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { Card, Col, Container, Row } from 'react-bootstrap';
 import IconButton from '../components/IconButton';
 import SpeakerInstruction from '../components/SpeakerInstruction';
+import Recorder from '../components/Recorder';
 
 const Home: NextPage = () => {
   const [audioCtx, setAudioCtx] = useState<AudioContext | undefined>(undefined);
@@ -35,6 +36,10 @@ const Home: NextPage = () => {
       clearInterval(timer);
     };
   }, [fetchSpeakers]);
+
+  if (!audioCtx) {
+    return <></>;
+  }
 
   return (
       <>
@@ -73,7 +78,7 @@ const Home: NextPage = () => {
             </Container>
           </Card.Title>
 
-          {audioCtx && speakers.length > 0 ?
+          {speakers.length > 0 ?
            speakers.map((id) => (
                <Player key={id}
                        id={id}
@@ -88,6 +93,7 @@ const Home: NextPage = () => {
            )) :
            (<span className="text-muted">No speakers available now!</span>)}
         </Card>
+        <Recorder audioCtx={audioCtx} />
       </>
   );
 };
