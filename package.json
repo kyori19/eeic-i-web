@@ -15,7 +15,8 @@
     "react": "18.1.0",
     "react-dom": "18.1.0",
     "ts-node": "^10.8.0",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "ws": "^8.7.0"
   },
   "devDependencies": {
     "@reacticons/bootstrap-icons": "^1.8.2",
@@ -23,6 +24,7 @@
     "@types/react": "18.0.9",
     "@types/react-dom": "18.0.4",
     "@types/uuid": "^8.3.4",
+    "@types/ws": "^8.5.3",
     "eslint": "8.16.0",
     "eslint-config-next": "12.1.6",
     "react-bootstrap": "^2.4.0",

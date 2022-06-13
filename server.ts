@@ -4,6 +4,7 @@ import { parse } from 'url';
 import SocketHolder from './lib/SocketHolder.js';
 import { ParsedUrlQuery } from 'querystring';
 import * as Buffer from 'buffer';
+import { WebSocketServer } from 'ws';
 
 const dev = process.env.NODE_ENV !== 'production';
 const hostname = 'localhost';
@@ -26,46 +27,52 @@ const parseQuery = (data: Exclude<ParsedUrlQuery[string], undefined>): string =>
 app.prepare().then(() => {
   const socketHolder = new SocketHolder(port + 1);
 
+  const wss = new WebSocketServer({ noServer: true });
+  wss.on('connection', (ws, req) => {
+    const { pathname, query } = parse(req.url || '', true);
+    switch (pathname) {
+      case '/listen': {
+        if (!query.id) {
+          break;
+        }
+
+        const id = parseQuery(query.id);
+        if (!socketHolder.speakers.has(id)) {
+          ws.close(1100, 'Speaker not found');
+          break;
+        }
+
+        const socket = socketHolder.speakers.get(id)!!;
+        const pipeData = (data: Buffer) => {
+          ws.send(data);
+        };
+        const disconnect = () => {
+          ws.close();
+          socket.removeListener('data', pipeData);
+          socket.removeListener('end', disconnect);
+          socket.removeListener('error', disconnect);
+        };
+        socket.on('data', pipeData);
+        socket.on('end', disconnect);
+        socket.on('error', disconnect);
+      }
+    }
+  });
+
   const server = createServer(async (req, res) => {
     try {
       // noinspection JSDeprecatedSymbols
       const parsedUrl = parse(req.url || '', true);
-      const { pathname, query } = parsedUrl;
 
-      switch (pathname) {
+      switch (parsedUrl.pathname) {
         case '/speakers': {
           res.statusCode = 200;
           res.end(JSON.stringify(Array.from(socketHolder.speakers.keys())));
           break;
         }
         case '/listen': {
-          if (!query.id) {
-            res.statusCode = 422;
-            res.end('Speaker ID not defined');
-            break;
-          }
-
-          const id = parseQuery(query.id);
-          if (!socketHolder.speakers.has(id)) {
-            res.statusCode = 422;
-            res.end('Speaker not found');
-            break;
-          }
-
-          res.statusCode = 200;
-          const socket = socketHolder.speakers.get(id)!!;
-          const pipeData = (data: Buffer) => {
-            res.write(data);
-          };
-          const disconnect = () => {
-            res.end();
-            socket.removeListener('data', pipeData);
-            socket.removeListener('end', disconnect);
-            socket.removeListener('error', disconnect);
-          };
-          socket.on('data', pipeData);
-          socket.on('end', disconnect);
-          socket.on('error', disconnect);
+          res.statusCode = 400;
+          res.end('Requires WebSocket request.');
           break;
         }
         default: {
@@ -80,6 +87,17 @@ app.prepare().then(() => {
     }
   });
   server.maxConnections = 2000;
+  server.on('upgrade', (req, sock, head) => {
+    const { pathname } = parse(req.url || '', true);
+    switch (pathname) {
+      case '/listen': {
+        wss.handleUpgrade(req, sock, head, (ws) => {
+          wss.emit('connection', ws, req);
+        });
+        break;
+      }
+    }
+  });
   server.listen(port, () => {
     // noinspection HttpUrlsUsage
     console.log(`Ready on http://${hostname}:${port}`);
