@@ -85,7 +85,6 @@ const Home: NextPage = () => {
                        style={{
                          width: '50%',
                          alignContent: 'center',
-                         margin: '16px',
                        }}
                        requestReset={fetchSpeakers}
                        audioCtx={audioCtx}
